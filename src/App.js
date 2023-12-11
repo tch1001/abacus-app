@@ -6,6 +6,8 @@ const App = props => {
 
   const numRods = 10;
   const canvasRef = useRef(null)
+  const keypadRef = useRef([])
+  const sliderRef = useRef(null)
   const feedbackRef = useRef(null)
   const inputRef = useRef(null)
   function drawAbacus(canvas, stateOfTopBeads, stateOfBottomBeads) {
@@ -93,6 +95,11 @@ const App = props => {
 
   var number = 0;
   var feedback = 'Feedback';
+  function keypadClick(e) {
+    e.preventDefault();
+    var value = e.target.value;
+    inputRef.current.value += value;
+  }
   function checkAnswer(e) {
     e.preventDefault();
     var answer = document.getElementById('quiz-input').value;
@@ -116,7 +123,7 @@ const App = props => {
       feedbackRef.current.innerHTML = feedback;
     }
     inputRef.current.value = '';
-    number = Math.floor(Math.random() * 100);
+    number = Math.floor(Math.random() * Math.pow(10, sliderRef.current.value));
     const topState = [];
     const bottomState = [];
     // generate the state of the abacus
@@ -138,7 +145,15 @@ const App = props => {
     setTimeout(() => {
       drawAbacus(canvasRef.current, blankTop, blankBottom);
     }
-    , 1500);
+    , 1000+parseInt(timerRef.current.value));
+  }
+  const settingsRef = useRef(null);
+  const timerRef = useRef(null);
+  function sliderChange(e) {
+    settingsRef.current.innerHTML = `${e.target.value} digits, ${timerRef.current.value}ms`;
+  }
+  function timerChange(e) {
+    settingsRef.current.innerHTML = `${sliderRef.current.value} digits, ${e.target.value}ms`;
   }
 
   return (
@@ -148,11 +163,24 @@ const App = props => {
         <canvas ref={canvasRef} {...props} id="myCanvas" style={{ height: '100vh', width: '100%'}}></canvas>
         {/* have a bit of text on the right */}
         <div class='quiz-div'>
-          <p class='quiz-text'>
-            Number:
-          </p>
+          {/* slider */}
+          <input ref={sliderRef} onChange={sliderChange} type='range' min='1' max='10' defaultValue="3" class='quiz-slider'></input>
+          <input ref={timerRef} onChange={timerChange} type='range' min='100' max='2000' defaultValue="500" class='quiz-slider'></input>
+          <p ref={settingsRef}>3 digits, 500ms</p>
+          <p class='quiz-text'> Number: </p>
           <form onSubmit={checkAnswer}>
             <input ref={inputRef} {...props} type='text' id='quiz-input' autocomplete='off' class='quiz-input' placeholder=''></input><br></br>
+            <input ref={keypadRef[1]} type='button' value='1' onClick={keypadClick}></input>
+            <input ref={keypadRef[2]} type='button' value='2' onClick={keypadClick}></input>
+            <input ref={keypadRef[3]} type='button' value='3' onClick={keypadClick}></input>
+            <input ref={keypadRef[4]} type='button' value='4' onClick={keypadClick}></input>
+            <input ref={keypadRef[5]} type='button' value='5' onClick={keypadClick}></input>
+            <input ref={keypadRef[6]} type='button' value='6' onClick={keypadClick}></input>
+            <input ref={keypadRef[7]} type='button' value='7' onClick={keypadClick}></input>
+            <input ref={keypadRef[8]} type='button' value='8' onClick={keypadClick}></input>
+            <input ref={keypadRef[9]} type='button' value='9' onClick={keypadClick}></input>
+            <input ref={keypadRef[0]} type='button' value='0' onClick={keypadClick}></input>
+            <br></br>
             <input type='submit' id='quiz-submit' value='Submit'></input>
           </form>
           <p ref={feedbackRef} {...props} class='quiz-feedback'>
