@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { useEffect, useRef, useState } from 'react';
 
@@ -268,10 +267,40 @@ const App = props => {
       setQuestion('Input Beads: ');
     }, parseInt(timerRef.current.value));
   }
-
+  function sayQuiz(e) {
+    e.preventDefault();
+    // generate 5 numbers to say as well as + or -
+    window.speechSynthesis.cancel();
+    var numbers = [];
+    const numOfNums = 5;
+    var sum = 0;
+    for (let i = 0; i < numOfNums; i++) {
+      // with 20% probability generate a negative number
+      if (i > numOfNums / 2 && Math.random() < 0.2) {
+        // but make sure it's not less than sum so far
+        numbers.push(-Math.floor(Math.random() * sum));
+      }else{
+        numbers.push(Math.floor(Math.random() * Math.pow(10, sliderRef.current.value)));
+      }
+      sum += numbers[i];
+      setTimeout(() => {
+        var msg = new SpeechSynthesisUtterance();
+        msg.text = '';
+        msg.text = numbers[i];
+        window.speechSynthesis.speak(msg);
+      }, parseInt(timerRef.current.value) * i);
+    }
+    // announce the answer
+    setTimeout(() => {
+      var msg = new SpeechSynthesisUtterance();
+      msg.text = '';
+      msg.text = 'The answer is ' + sum;
+      window.speechSynthesis.speak(msg);
+    }, parseInt(timerRef.current.value) * numOfNums + 1000);
+    console.log(numbers, sum);
+  }
   const renderGame = () => {
-    if (gameMode == 0) {
-      return (<form onSubmit={checkAnswer}>
+    const keypad = (<form onSubmit={checkAnswer}>
         <input ref={inputRef} {...props} type='text' id='quiz-input' autocomplete='off' class='quiz-input' placeholder=''></input><br></br>
         <table class='keypadTable'>
           <tr className='keypadRow'>
@@ -296,21 +325,30 @@ const App = props => {
           </tr>
         </table>
         <br></br>
-        <input type='submit' class='quiz-submit' value='Submit'></input>
+        <input type='submit' class='quiz-submit'></input>
       </form>)
+    if (gameMode == 0 ) {
+      return keypad
+    } else if(gameMode == 2) {
+      return (
+        <div>
+          <button onClick={sayQuiz}>Speak</button>
+          {keypad}
+        </div>
+      )
     } else if (gameMode == 1) {
       return (
         <div>
           <p>{question}</p>
           <form onSubmit={checkAbacusAnswer}>
-            <input type='submit' class='quiz-submit' value='Submit'></input>
+            <input type='submit' class='quiz-submit'></input>
           </form>
         </div>
       )
     }
   }
   function changeGamemode(e) {
-    setGameMode((old) => (old + 1) % 2);
+    setGameMode((old) => (old + 1) % 3);
   }
   return (
     <div className="App">
@@ -321,7 +359,7 @@ const App = props => {
         <div class='quiz-div'>
           {/* slider */}
           <input ref={sliderRef} onChange={sliderChange} type='range' min='1' max='10' defaultValue="3" class='quiz-slider'></input>
-          <input ref={timerRef} onChange={timerChange} type='range' min='100' max='2000' defaultValue="750" class='quiz-slider'></input>
+          <input ref={timerRef} onChange={timerChange} type='range' min='100' max='20000' defaultValue="750" class='quiz-slider'></input>
           <input type='button' value='Game Mode' class='quiz-submit' onClick={changeGamemode}></input>
           <p ref={settingsRef}>3 digits, 750ms</p>
           {renderGame()}
